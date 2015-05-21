@@ -23,7 +23,7 @@ namespace vw_explore_tests
             TestRecorder<TestContext> my_recorder;
 
 			MwtExplorer<TestContext> mwt("salt", my_recorder);
-			EpsilonGreedyExplorer<TestContext> explorer(my_policy, epsilon, num_actions);
+			EpsilonGreedyExplorerMultiAction<TestContext> explorer(my_policy, epsilon, num_actions);
 
             u32 expected_actions[num_actions];
 			my_policy.Choose_Action(my_context, expected_actions, num_actions);
@@ -48,7 +48,7 @@ namespace vw_explore_tests
             TestPolicy<TestContext> my_policy(params, num_actions);
             TestContext my_context;
 
-            EpsilonGreedyExplorer<TestContext> explorer(my_policy, epsilon, num_actions); // Initialize in fixed # action mode
+            EpsilonGreedyExplorerMultiAction<TestContext> explorer(my_policy, epsilon, num_actions); // Initialize in fixed # action mode
 
             this->Epsilon_Greedy_Random_Context(num_actions, my_context, explorer, my_policy);
 		}
@@ -61,7 +61,7 @@ namespace vw_explore_tests
             TestPolicy<TestVarContext> my_policy(params, num_actions);
             TestVarContext my_context(num_actions);
             
-            EpsilonGreedyExplorer<TestVarContext> explorer(my_policy, epsilon); // Initialize in variable # action mode
+            EpsilonGreedyExplorerMultiAction<TestVarContext> explorer(my_policy, epsilon); // Initialize in variable # action mode
             
             // Test results using context that supports variable # action interface but returns fixed # action.
             this->Epsilon_Greedy_Random_Context(num_actions, my_context, explorer, my_policy);
@@ -78,7 +78,7 @@ namespace vw_explore_tests
             TestRecorder<TestContext> my_recorder;
 
             MwtExplorer<TestContext> mwt("salt", my_recorder);
-            EpsilonGreedyExplorer<TestContext> explorer(my_policy, epsilon, num_actions);
+            EpsilonGreedyExplorerMultiAction<TestContext> explorer(my_policy, epsilon, num_actions);
 
             u32 policy_actions[num_actions];
             my_policy.Choose_Action(my_context, policy_actions, num_actions);
@@ -129,7 +129,7 @@ namespace vw_explore_tests
 			TestContext my_context;
 
 			MwtExplorer<TestContext> mwt("salt", my_recorder);
-			TauFirstExplorer<TestContext> explorer(my_policy, tau, num_actions);
+			TauFirstExplorerMultiAction<TestContext> explorer(my_policy, tau, num_actions);
 
             u32 expected_actions[num_actions];
             
@@ -151,7 +151,7 @@ namespace vw_explore_tests
             u32 tau = 2;
             TestContext my_context;
             TestPolicy<TestContext> my_policy(99, num_actions);
-            TauFirstExplorer<TestContext> explorer(my_policy, tau, num_actions);
+            TauFirstExplorerMultiAction<TestContext> explorer(my_policy, tau, num_actions);
 
             this->Tau_First_Random_Context(num_actions, my_context, explorer, my_policy);
 		}
@@ -162,7 +162,7 @@ namespace vw_explore_tests
             u32 tau = 2;
             TestVarContext my_context(num_actions);
             TestPolicy<TestVarContext> my_policy(99, num_actions);
-            TauFirstExplorer<TestVarContext> explorer(my_policy, tau);
+            TauFirstExplorerMultiAction<TestVarContext> explorer(my_policy, tau);
 
             this->Tau_First_Random_Context(num_actions, my_context, explorer, my_policy);
         }
@@ -176,7 +176,7 @@ namespace vw_explore_tests
             TestContext my_context;
 
             MwtExplorer<TestContext> mwt("salt", my_recorder);
-            TauFirstExplorer<TestContext> explorer(my_policy, tau, num_actions);
+            TauFirstExplorerMultiAction<TestContext> explorer(my_policy, tau, num_actions);
 
             u32 policy_actions[num_actions];
             my_policy.Choose_Action(my_context, policy_actions, num_actions);
@@ -223,14 +223,14 @@ namespace vw_explore_tests
 			int params = 101;
             TestRecorder<TestContext> my_recorder;
 
-			vector<unique_ptr<IPolicy<TestContext>>> policies;
-            policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestPolicy<TestContext>(params, num_actions)));
-            policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestPolicy<TestContext>(params + 1, num_actions)));
+			vector<unique_ptr<IPolicyMultiAction<TestContext>>> policies;
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestPolicy<TestContext>(params, num_actions)));
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestPolicy<TestContext>(params + 1, num_actions)));
 
 			TestContext my_context;
 
 			MwtExplorer<TestContext> mwt("c++-test", my_recorder);
-			BootstrapExplorer<TestContext> explorer(policies, num_actions);
+			BootstrapExplorerMultiAction<TestContext> explorer(policies, num_actions);
 
             u32 expected_actions1[num_actions];
             policies[0]->Choose_Action(my_context, expected_actions1, num_actions);
@@ -257,11 +257,11 @@ namespace vw_explore_tests
             int params = 101;
             TestContext my_context;
 
-            vector<unique_ptr<IPolicy<TestContext>>> policies;
-            policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestPolicy<TestContext>(params, num_actions)));
-            policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestPolicy<TestContext>(params + 1, num_actions)));
+            vector<unique_ptr<IPolicyMultiAction<TestContext>>> policies;
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestPolicy<TestContext>(params, num_actions)));
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestPolicy<TestContext>(params + 1, num_actions)));
 
-            BootstrapExplorer<TestContext> explorer(policies, num_actions);
+            BootstrapExplorerMultiAction<TestContext> explorer(policies, num_actions);
 
             this->Bootstrap_Random_Context(num_actions, my_context, explorer, policies);
 		}
@@ -272,11 +272,11 @@ namespace vw_explore_tests
             int params = 101;
             TestVarContext my_context(num_actions);
 
-            vector<unique_ptr<IPolicy<TestVarContext>>> policies;
-            policies.push_back(unique_ptr<IPolicy<TestVarContext>>(new TestPolicy<TestVarContext>(params, num_actions)));
-            policies.push_back(unique_ptr<IPolicy<TestVarContext>>(new TestPolicy<TestVarContext>(params + 1, num_actions)));
+            vector<unique_ptr<IPolicyMultiAction<TestVarContext>>> policies;
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestVarContext>>(new TestPolicy<TestVarContext>(params, num_actions)));
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestVarContext>>(new TestPolicy<TestVarContext>(params + 1, num_actions)));
 
-            BootstrapExplorer<TestVarContext> explorer(policies);
+            BootstrapExplorerMultiAction<TestVarContext> explorer(policies);
 
             this->Bootstrap_Random_Context(num_actions, my_context, explorer, policies);
         }
@@ -287,14 +287,14 @@ namespace vw_explore_tests
             int params = 101;
             TestRecorder<TestContext> my_recorder;
 
-            vector<unique_ptr<IPolicy<TestContext>>> policies;
-            policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestPolicy<TestContext>(params, num_actions)));
-            policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestPolicy<TestContext>(params + 1, num_actions)));
+            vector<unique_ptr<IPolicyMultiAction<TestContext>>> policies;
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestPolicy<TestContext>(params, num_actions)));
+            policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestPolicy<TestContext>(params + 1, num_actions)));
 
             TestContext my_context;
 
             MwtExplorer<TestContext> mwt("c++-test", my_recorder);
-            BootstrapExplorer<TestContext> explorer(policies, num_actions);
+            BootstrapExplorerMultiAction<TestContext> explorer(policies, num_actions);
 
             u32 policy_actions[num_actions];
             policies[0]->Choose_Action(my_context, policy_actions, num_actions);
@@ -348,7 +348,7 @@ namespace vw_explore_tests
             TestContext my_context;
 
             TestScorer<TestContext> my_scorer(scorer_arg, num_actions);
-            SoftmaxExplorer<TestContext> explorer(my_scorer, lambda, num_actions);
+            SoftmaxExplorerMultiAction<TestContext> explorer(my_scorer, lambda, num_actions);
 
             this->Softmax_Context(num_actions, my_context, explorer);
 		}
@@ -362,7 +362,7 @@ namespace vw_explore_tests
             TestVarContext my_context(num_actions);
 
             TestScorer<TestVarContext> my_scorer(scorer_arg, num_actions);
-            SoftmaxExplorer<TestVarContext> explorer(my_scorer, lambda);
+            SoftmaxExplorerMultiAction<TestVarContext> explorer(my_scorer, lambda);
 
             this->Softmax_Context(num_actions, my_context, explorer);
         }
@@ -377,7 +377,7 @@ namespace vw_explore_tests
 			TestContext my_context;
 
 			MwtExplorer<TestContext> mwt("salt", my_recorder);
-			SoftmaxExplorer<TestContext> explorer(my_scorer, lambda, num_actions);
+			SoftmaxExplorerMultiAction<TestContext> explorer(my_scorer, lambda, num_actions);
 
             u32 actions[num_actions];
             mwt.Choose_Action(explorer, this->Get_Unique_Key(1), my_context, actions, num_actions);
@@ -404,7 +404,7 @@ namespace vw_explore_tests
             TestContext my_context;
 
             MwtExplorer<TestContext> mwt("salt", my_recorder);
-            SoftmaxExplorer<TestContext> explorer(my_scorer, lambda, num_actions);
+            SoftmaxExplorerMultiAction<TestContext> explorer(my_scorer, lambda, num_actions);
 
             vector<float> scores = my_scorer.Score_Actions(my_context);
             float max_score = 0.f;
@@ -466,7 +466,7 @@ namespace vw_explore_tests
             TestContext my_context;
             
             TestScorer<TestContext> my_scorer(scorer_arg, num_actions);
-            GenericExplorer<TestContext> explorer(my_scorer, num_actions);
+            GenericExplorerMultiAction<TestContext> explorer(my_scorer, num_actions);
 
             this->Generic_Context(num_actions, my_context, explorer);
 		}
@@ -479,7 +479,7 @@ namespace vw_explore_tests
             TestVarContext my_context(num_actions);
 
             TestScorer<TestVarContext> my_scorer(scorer_arg, num_actions);
-            GenericExplorer<TestVarContext> explorer(my_scorer);
+            GenericExplorerMultiAction<TestVarContext> explorer(my_scorer);
 
             this->Generic_Context(num_actions, my_context, explorer);
         }
@@ -494,7 +494,7 @@ namespace vw_explore_tests
 			StringRecorder<SimpleContext> my_recorder;
 
 			MwtExplorer<SimpleContext> mwt("salt", my_recorder);
-			EpsilonGreedyExplorer<SimpleContext> explorer(my_policy, epsilon, num_actions);
+			EpsilonGreedyExplorerMultiAction<SimpleContext> explorer(my_policy, epsilon, num_actions);
 
             this->End_To_End(num_actions, mwt, explorer, my_recorder);
 		}
@@ -509,7 +509,7 @@ namespace vw_explore_tests
 			StringRecorder<SimpleContext> my_recorder;
 
 			MwtExplorer<SimpleContext> mwt("salt", my_recorder);
-			TauFirstExplorer<SimpleContext> explorer(my_policy, tau, num_actions);
+			TauFirstExplorerMultiAction<SimpleContext> explorer(my_policy, tau, num_actions);
 
             this->End_To_End(num_actions, mwt, explorer, my_recorder);
 		}
@@ -521,12 +521,12 @@ namespace vw_explore_tests
 			int params = 101;
 			StringRecorder<SimpleContext> my_recorder;
 
-			vector<unique_ptr<IPolicy<SimpleContext>>> policies;
-			policies.push_back(unique_ptr<IPolicy<SimpleContext>>(new TestSimplePolicy(params, num_actions)));
-			policies.push_back(unique_ptr<IPolicy<SimpleContext>>(new TestSimplePolicy(params, num_actions)));
+			vector<unique_ptr<IPolicyMultiAction<SimpleContext>>> policies;
+			policies.push_back(unique_ptr<IPolicyMultiAction<SimpleContext>>(new TestSimplePolicy(params, num_actions)));
+			policies.push_back(unique_ptr<IPolicyMultiAction<SimpleContext>>(new TestSimplePolicy(params, num_actions)));
 
 			MwtExplorer<SimpleContext> mwt("salt", my_recorder);
-			BootstrapExplorer<SimpleContext> explorer(policies, num_actions);
+			BootstrapExplorerMultiAction<SimpleContext> explorer(policies, num_actions);
 
             this->End_To_End(num_actions, mwt, explorer, my_recorder);
 		}
@@ -540,7 +540,7 @@ namespace vw_explore_tests
 			StringRecorder<SimpleContext> my_recorder;
 
 			MwtExplorer<SimpleContext> mwt("salt", my_recorder);
-			SoftmaxExplorer<SimpleContext> explorer(my_scorer, lambda, num_actions);
+			SoftmaxExplorerMultiAction<SimpleContext> explorer(my_scorer, lambda, num_actions);
 
             this->End_To_End(num_actions, mwt, explorer, my_recorder);
 		}
@@ -553,7 +553,7 @@ namespace vw_explore_tests
 			StringRecorder<SimpleContext> my_recorder;
 
 			MwtExplorer<SimpleContext> mwt("salt", my_recorder);
-			GenericExplorer<SimpleContext> explorer(my_scorer, num_actions);
+			GenericExplorerMultiAction<SimpleContext> explorer(my_scorer, num_actions);
 
             this->End_To_End(num_actions, mwt, explorer, my_recorder);
 		}
@@ -590,7 +590,7 @@ namespace vw_explore_tests
 
 			StringRecorder<SimpleContext> my_recorder;
 			MwtExplorer<SimpleContext> mwt("c++-test", my_recorder);
-			EpsilonGreedyExplorer<SimpleContext> explorer(my_policy, epsilon, num_actions);
+			EpsilonGreedyExplorerMultiAction<SimpleContext> explorer(my_policy, epsilon, num_actions);
 
 			vector<Feature> features1;
 			features1.push_back({ 0.5f, 1 });
@@ -636,7 +636,7 @@ namespace vw_explore_tests
 			{
 				StringRecorder<SimpleContext> my_recorder;
 				MwtExplorer<SimpleContext> mwt("c++-test", my_recorder);
-				EpsilonGreedyExplorer<SimpleContext> explorer(my_policy, 0.f, num_actions);
+				EpsilonGreedyExplorerMultiAction<SimpleContext> explorer(my_policy, 0.f, num_actions);
 
 				Feature feature;
 				feature.Value = (rand.Uniform_Unit_Interval() - 0.5f) * rand.Uniform_Int(0, 100000);
@@ -674,18 +674,18 @@ namespace vw_explore_tests
 			int params = 101;
             TestPolicy<TestContext> my_policy(params, 0);
             TestScorer<TestContext> my_scorer(params, 0);
-			vector<unique_ptr<IPolicy<TestContext>>> policies;
+			vector<unique_ptr<IPolicyMultiAction<TestContext>>> policies;
 
-			COUNT_INVALID(EpsilonGreedyExplorer<TestContext> explorer(my_policy, .5f, 0);) // Invalid # actions, must be > 0
-			COUNT_INVALID(EpsilonGreedyExplorer<TestContext> explorer(my_policy, 1.5f, 10);) // Invalid epsilon, must be in [0,1]
-			COUNT_INVALID(EpsilonGreedyExplorer<TestContext> explorer(my_policy, -.5f, 10);) // Invalid epsilon, must be in [0,1]
+			COUNT_INVALID(EpsilonGreedyExplorerMultiAction<TestContext> explorer(my_policy, .5f, 0);) // Invalid # actions, must be > 0
+			COUNT_INVALID(EpsilonGreedyExplorerMultiAction<TestContext> explorer(my_policy, 1.5f, 10);) // Invalid epsilon, must be in [0,1]
+			COUNT_INVALID(EpsilonGreedyExplorerMultiAction<TestContext> explorer(my_policy, -.5f, 10);) // Invalid epsilon, must be in [0,1]
 
-			COUNT_INVALID(BootstrapExplorer<TestContext> explorer(policies, 0);) // Invalid # actions, must be > 0
-			COUNT_INVALID(BootstrapExplorer<TestContext> explorer(policies, 1);) // Invalid # bags, must be > 0
+			COUNT_INVALID(BootstrapExplorerMultiAction<TestContext> explorer(policies, 0);) // Invalid # actions, must be > 0
+			COUNT_INVALID(BootstrapExplorerMultiAction<TestContext> explorer(policies, 1);) // Invalid # bags, must be > 0
 
-			COUNT_INVALID(TauFirstExplorer<TestContext> explorer(my_policy, 1, 0);) // Invalid # actions, must be > 0
-			COUNT_INVALID(SoftmaxExplorer<TestContext> explorer(my_scorer, .5f, 0);) // Invalid # actions, must be > 0
-			COUNT_INVALID(GenericExplorer<TestContext> explorer(my_scorer, 0);) // Invalid # actions, must be > 0
+			COUNT_INVALID(TauFirstExplorerMultiAction<TestContext> explorer(my_policy, 1, 0);) // Invalid # actions, must be > 0
+			COUNT_INVALID(SoftmaxExplorerMultiAction<TestContext> explorer(my_scorer, .5f, 0);) // Invalid # actions, must be > 0
+			COUNT_INVALID(GenericExplorerMultiAction<TestContext> explorer(my_scorer, 0);) // Invalid # actions, must be > 0
 
 
 			Assert::AreEqual(8, num_ex);
@@ -703,7 +703,7 @@ namespace vw_explore_tests
 				TestContext context;
 
 				MwtExplorer<TestContext> mwt("salt", recorder);
-				EpsilonGreedyExplorer<TestContext> explorer(policy, 0.f, (u32)1);
+				EpsilonGreedyExplorerMultiAction<TestContext> explorer(policy, 0.f, (u32)1);
 
                 u32 expected_action[1];
                 mwt.Choose_Action(explorer, "1001", context, expected_action, 1);
@@ -715,7 +715,7 @@ namespace vw_explore_tests
 				TestContext context;
 
 				MwtExplorer<TestContext> mwt("salt", recorder);
-				TauFirstExplorer<TestContext> explorer(policy, (u32)0, (u32)1);
+				TauFirstExplorerMultiAction<TestContext> explorer(policy, (u32)0, (u32)1);
 
                 u32 actions[1];
                 mwt.Choose_Action(explorer, "test", context, actions, 1);
@@ -727,10 +727,10 @@ namespace vw_explore_tests
                 TestRecorder<TestContext> recorder;
 				TestContext context;
 
-				vector<unique_ptr<IPolicy<TestContext>>> policies;
-				policies.push_back(unique_ptr<IPolicy<TestContext>>(new TestBadPolicy()));
+				vector<unique_ptr<IPolicyMultiAction<TestContext>>> policies;
+				policies.push_back(unique_ptr<IPolicyMultiAction<TestContext>>(new TestBadPolicy()));
 				MwtExplorer<TestContext> mwt("salt", recorder);
-				BootstrapExplorer<TestContext> explorer(policies, (u32)1);
+				BootstrapExplorerMultiAction<TestContext> explorer(policies, (u32)1);
 
                 u32 actions[1];
                 mwt.Choose_Action(explorer, "test", context, actions, 1);
@@ -748,7 +748,7 @@ namespace vw_explore_tests
 				const u32 num_actions = 1;
 				FixedScorer scorer(num_actions, -1);
                 MwtExplorer<TestContext> mwt("salt", TestRecorder<TestContext>());
-				GenericExplorer<TestContext> explorer(scorer, num_actions);
+				GenericExplorerMultiAction<TestContext> explorer(scorer, num_actions);
 
                 u32 actions[num_actions];
                 mwt.Choose_Action(explorer, "test", TestContext(), actions, num_actions);
@@ -758,7 +758,7 @@ namespace vw_explore_tests
 				const u32 num_actions = 1;
 				FixedScorer scorer(num_actions, 0);
                 MwtExplorer<TestContext> mwt("salt", TestRecorder<TestContext>());
-				GenericExplorer<TestContext> explorer(scorer, num_actions);
+				GenericExplorerMultiAction<TestContext> explorer(scorer, num_actions);
 
                 u32 actions[num_actions];
                 mwt.Choose_Action(explorer, "test", TestContext(), actions, num_actions);
@@ -783,7 +783,7 @@ namespace vw_explore_tests
 			features.push_back({ -5.3f, 13 });
 			SimpleContext custom_context(features);
 
-			EpsilonGreedyExplorer<SimpleContext> explorer(my_policy, epsilon, num_actions);
+			EpsilonGreedyExplorerMultiAction<SimpleContext> explorer(my_policy, epsilon, num_actions);
 
             u32 chosen_actions[num_actions];
             mwt.Choose_Action(explorer, unique_key, custom_context, chosen_actions, num_actions);
@@ -823,7 +823,7 @@ namespace vw_explore_tests
 	private: 
 
         template <class TContext>
-        void Epsilon_Greedy_Random_Context(int num_actions, TContext& my_context, EpsilonGreedyExplorer<TContext>& explorer, TestPolicy<TContext>& my_policy)
+        void Epsilon_Greedy_Random_Context(int num_actions, TContext& my_context, EpsilonGreedyExplorerMultiAction<TContext>& explorer, TestPolicy<TContext>& my_policy)
         {
             TestRecorder<TContext> my_recorder;
             MwtExplorer<TContext> mwt("salt", my_recorder);
@@ -851,7 +851,7 @@ namespace vw_explore_tests
         }
 
         template <class TContext>
-        void Tau_First_Random_Context(int num_actions, TContext& my_context, TauFirstExplorer<TContext>& explorer, TestPolicy<TContext>& my_policy)
+        void Tau_First_Random_Context(int num_actions, TContext& my_context, TauFirstExplorerMultiAction<TContext>& explorer, TestPolicy<TContext>& my_policy)
         {
             TestRecorder<TContext> my_recorder;
             MwtExplorer<TContext> mwt("salt", my_recorder);
@@ -881,7 +881,7 @@ namespace vw_explore_tests
         }
 
         template <class TContext>
-        void Bootstrap_Random_Context(int num_actions, TContext& my_context, BootstrapExplorer<TContext>& explorer, vector<unique_ptr<IPolicy<TContext>>>& policies)
+        void Bootstrap_Random_Context(int num_actions, TContext& my_context, BootstrapExplorerMultiAction<TContext>& explorer, vector<unique_ptr<IPolicyMultiAction<TContext>>>& policies)
         {
             TestRecorder<TContext> my_recorder;
 
@@ -923,7 +923,7 @@ namespace vw_explore_tests
         }
 
         template <class TContext>
-        void Softmax_Context(int num_actions, TContext& my_context, SoftmaxExplorer<TContext>& explorer)
+        void Softmax_Context(int num_actions, TContext& my_context, SoftmaxExplorerMultiAction<TContext>& explorer)
         {
             u32 NUM_ACTIONS_COVER = 100;
             float C = 5.0f;
@@ -968,7 +968,7 @@ namespace vw_explore_tests
         }
 
         template <class TContext>
-        void Generic_Context(int num_actions, TContext& my_context, GenericExplorer<TContext>& explorer)
+        void Generic_Context(int num_actions, TContext& my_context, GenericExplorerMultiAction<TContext>& explorer)
         {
             TestRecorder<TContext> my_recorder;
 

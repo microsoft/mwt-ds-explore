@@ -16,7 +16,7 @@ namespace MultiWorldTesting {
 	/// </remarks>
 	/// <typeparam name="Ctx">The Context type.</typeparam>
 	generic <class Ctx>
-	public ref class EpsilonGreedyExplorer : public IExplorer<Ctx>, public IConsumePolicy<Ctx>, public PolicyCallback<Ctx>
+	public ref class EpsilonGreedyExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumePolicyMultiAction<Ctx>, public PolicyCallback<Ctx>
 	{
 	public:
 		/// <summary>
@@ -25,10 +25,10 @@ namespace MultiWorldTesting {
 		/// <param name="defaultPolicy">A default function which outputs an action given a context.</param>
 		/// <param name="epsilon">The probability of a random exploration.</param>
 		/// <param name="numActions">The number of actions to randomize over.</param>
-		EpsilonGreedyExplorer(IPolicy<Ctx>^ defaultPolicy, float epsilon, UInt32 numActions)
+		EpsilonGreedyExplorerMultiAction(IPolicyMultiAction<Ctx>^ defaultPolicy, float epsilon, UInt32 numActions)
 		{
 			this->defaultPolicy = defaultPolicy;
-			m_explorer = new NativeMultiWorldTesting::EpsilonGreedyExplorer<NativeContext>(*GetNativePolicy(), epsilon, (u32)numActions);
+			m_explorer = new NativeMultiWorldTesting::EpsilonGreedyExplorerMultiAction<NativeContext>(*GetNativePolicy(), epsilon, (u32)numActions);
 		}
 
         /// <summary>
@@ -36,18 +36,18 @@ namespace MultiWorldTesting {
         /// </summary>
         /// <param name="defaultPolicy">A default function which outputs an action given a context.</param>
         /// <param name="epsilon">The probability of a random exploration.</param>
-        EpsilonGreedyExplorer(IPolicy<Ctx>^ defaultPolicy, float epsilon)
+        EpsilonGreedyExplorerMultiAction(IPolicyMultiAction<Ctx>^ defaultPolicy, float epsilon)
         {
             this->defaultPolicy = defaultPolicy;
-            m_explorer = new NativeMultiWorldTesting::EpsilonGreedyExplorer<NativeContext>(*GetNativePolicy(), epsilon);
+            m_explorer = new NativeMultiWorldTesting::EpsilonGreedyExplorerMultiAction<NativeContext>(*GetNativePolicy(), epsilon);
         }
 
-		~EpsilonGreedyExplorer()
+		~EpsilonGreedyExplorerMultiAction()
 		{
 			delete m_explorer;
 		}
 
-        virtual void UpdatePolicy(IPolicy<Ctx>^ newPolicy)
+        virtual void UpdatePolicy(IPolicyMultiAction<Ctx>^ newPolicy)
         {
             this->defaultPolicy = newPolicy;
         }
@@ -75,14 +75,14 @@ namespace MultiWorldTesting {
             Array::Copy(defaultActions, actions, actions->Length);
 		}
 
-		NativeMultiWorldTesting::EpsilonGreedyExplorer<NativeContext>* Get()
+		NativeMultiWorldTesting::EpsilonGreedyExplorerMultiAction<NativeContext>* Get()
 		{
 			return m_explorer;
 		}
 
 	private:
-		IPolicy<Ctx>^ defaultPolicy;
-		NativeMultiWorldTesting::EpsilonGreedyExplorer<NativeContext>* m_explorer;
+		IPolicyMultiAction<Ctx>^ defaultPolicy;
+		NativeMultiWorldTesting::EpsilonGreedyExplorerMultiAction<NativeContext>* m_explorer;
 	};
 
 	/// <summary>
@@ -94,7 +94,7 @@ namespace MultiWorldTesting {
 	/// </remarks>
 	/// <typeparam name="Ctx">The Context type.</typeparam>
 	generic <class Ctx>
-    public ref class TauFirstExplorer : public IExplorer<Ctx>, public IConsumePolicy<Ctx>, public PolicyCallback<Ctx>
+    public ref class TauFirstExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumePolicyMultiAction<Ctx>, public PolicyCallback<Ctx>
 	{
 	public:
 		/// <summary>
@@ -103,10 +103,10 @@ namespace MultiWorldTesting {
 		/// <param name="defaultPolicy">A default policy after randomization finishes.</param>
 		/// <param name="tau">The number of events to be uniform over.</param>
 		/// <param name="numActions">The number of actions to randomize over.</param>
-		TauFirstExplorer(IPolicy<Ctx>^ defaultPolicy, UInt32 tau, UInt32 numActions)
+		TauFirstExplorerMultiAction(IPolicyMultiAction<Ctx>^ defaultPolicy, UInt32 tau, UInt32 numActions)
 		{
 			this->defaultPolicy = defaultPolicy;
-			m_explorer = new NativeMultiWorldTesting::TauFirstExplorer<NativeContext>(*GetNativePolicy(), tau, (u32)numActions);
+			m_explorer = new NativeMultiWorldTesting::TauFirstExplorerMultiAction<NativeContext>(*GetNativePolicy(), tau, (u32)numActions);
 		}
 
         /// <summary>
@@ -114,13 +114,13 @@ namespace MultiWorldTesting {
         /// </summary>
         /// <param name="defaultPolicy">A default policy after randomization finishes.</param>
         /// <param name="tau">The number of events to be uniform over.</param>
-        TauFirstExplorer(IPolicy<Ctx>^ defaultPolicy, UInt32 tau)
+        TauFirstExplorerMultiAction(IPolicyMultiAction<Ctx>^ defaultPolicy, UInt32 tau)
         {
             this->defaultPolicy = defaultPolicy;
-            m_explorer = new NativeMultiWorldTesting::TauFirstExplorer<NativeContext>(*GetNativePolicy(), tau);
+            m_explorer = new NativeMultiWorldTesting::TauFirstExplorerMultiAction<NativeContext>(*GetNativePolicy(), tau);
         }
 
-        virtual void UpdatePolicy(IPolicy<Ctx>^ newPolicy)
+        virtual void UpdatePolicy(IPolicyMultiAction<Ctx>^ newPolicy)
         {
             this->defaultPolicy = newPolicy;
         }
@@ -130,7 +130,7 @@ namespace MultiWorldTesting {
             m_explorer->Enable_Explore(explore);
         }
 
-		~TauFirstExplorer()
+		~TauFirstExplorerMultiAction()
 		{
 			delete m_explorer;
 		}
@@ -153,14 +153,14 @@ namespace MultiWorldTesting {
             Array::Copy(defaultActions, actions, actions->Length);
 		}
 
-		NativeMultiWorldTesting::TauFirstExplorer<NativeContext>* Get()
+		NativeMultiWorldTesting::TauFirstExplorerMultiAction<NativeContext>* Get()
 		{
 			return m_explorer;
 		}
 
 	private:
-		IPolicy<Ctx>^ defaultPolicy;
-		NativeMultiWorldTesting::TauFirstExplorer<NativeContext>* m_explorer;
+		IPolicyMultiAction<Ctx>^ defaultPolicy;
+		NativeMultiWorldTesting::TauFirstExplorerMultiAction<NativeContext>* m_explorer;
 	};
 
 	/// <summary>
@@ -173,7 +173,7 @@ namespace MultiWorldTesting {
 	/// </remarks>
 	/// <typeparam name="Ctx">The Context type.</typeparam>
 	generic <class Ctx>
-	public ref class SoftmaxExplorer : public IExplorer<Ctx>, public IConsumeScorer<Ctx>, public ScorerCallback<Ctx>
+	public ref class SoftmaxExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumeScorer<Ctx>, public ScorerCallback<Ctx>
 	{
 	public:
 		/// <summary>
@@ -182,10 +182,10 @@ namespace MultiWorldTesting {
 		/// <param name="defaultScorer">A function which outputs a score for each action.</param>
 		/// <param name="lambda">lambda = 0 implies uniform distribution. Large lambda is equivalent to a max.</param>
 		/// <param name="numActions">The number of actions to randomize over.</param>
-		SoftmaxExplorer(IScorer<Ctx>^ defaultScorer, float lambda, UInt32 numActions)
+		SoftmaxExplorerMultiAction(IScorer<Ctx>^ defaultScorer, float lambda, UInt32 numActions)
 		{
 			this->defaultScorer = defaultScorer;
-			m_explorer = new NativeMultiWorldTesting::SoftmaxExplorer<NativeContext>(*GetNativeScorer(), lambda, (u32)numActions);
+			m_explorer = new NativeMultiWorldTesting::SoftmaxExplorerMultiAction<NativeContext>(*GetNativeScorer(), lambda, (u32)numActions);
 		}
 
         /// <summary>
@@ -193,10 +193,10 @@ namespace MultiWorldTesting {
         /// </summary>
         /// <param name="defaultScorer">A function which outputs a score for each action.</param>
         /// <param name="lambda">lambda = 0 implies uniform distribution. Large lambda is equivalent to a max.</param>
-        SoftmaxExplorer(IScorer<Ctx>^ defaultScorer, float lambda)
+        SoftmaxExplorerMultiAction(IScorer<Ctx>^ defaultScorer, float lambda)
         {
             this->defaultScorer = defaultScorer;
-            m_explorer = new NativeMultiWorldTesting::SoftmaxExplorer<NativeContext>(*GetNativeScorer(), lambda);
+            m_explorer = new NativeMultiWorldTesting::SoftmaxExplorerMultiAction<NativeContext>(*GetNativeScorer(), lambda);
         }
 
         virtual void UpdateScorer(IScorer<Ctx>^ newScorer)
@@ -209,7 +209,7 @@ namespace MultiWorldTesting {
             m_explorer->Enable_Explore(explore);
         }
 
-		~SoftmaxExplorer()
+		~SoftmaxExplorerMultiAction()
 		{
 			delete m_explorer;
 		}
@@ -220,26 +220,26 @@ namespace MultiWorldTesting {
 			return defaultScorer->ScoreActions(context);
 		}
 
-		NativeMultiWorldTesting::SoftmaxExplorer<NativeContext>* Get()
+		NativeMultiWorldTesting::SoftmaxExplorerMultiAction<NativeContext>* Get()
 		{
 			return m_explorer;
 		}
 
 	private:
 		IScorer<Ctx>^ defaultScorer;
-		NativeMultiWorldTesting::SoftmaxExplorer<NativeContext>* m_explorer;
+		NativeMultiWorldTesting::SoftmaxExplorerMultiAction<NativeContext>* m_explorer;
 	};
 
 	/// <summary>
 	/// The generic exploration class.
 	/// </summary>
 	/// <remarks>
-	/// GenericExplorer provides complete flexibility.  You can create any
+	/// GenericExplorerMultiAction provides complete flexibility.  You can create any
 	/// distribution over actions desired, and it will draw from that.
 	/// </remarks>
 	/// <typeparam name="Ctx">The Context type.</typeparam>
 	generic <class Ctx>
-    public ref class GenericExplorer : public IExplorer<Ctx>, public IConsumeScorer<Ctx>, public ScorerCallback<Ctx>
+    public ref class GenericExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumeScorer<Ctx>, public ScorerCallback<Ctx>
 	{
 	public:
 		/// <summary>
@@ -247,20 +247,20 @@ namespace MultiWorldTesting {
 		/// </summary>
 		/// <param name="defaultScorer">A function which outputs the probability of each action.</param>
 		/// <param name="numActions">The number of actions to randomize over.</param>
-		GenericExplorer(IScorer<Ctx>^ defaultScorer, UInt32 numActions)
+		GenericExplorerMultiAction(IScorer<Ctx>^ defaultScorer, UInt32 numActions)
 		{
 			this->defaultScorer = defaultScorer;
-			m_explorer = new NativeMultiWorldTesting::GenericExplorer<NativeContext>(*GetNativeScorer(), (u32)numActions);
+			m_explorer = new NativeMultiWorldTesting::GenericExplorerMultiAction<NativeContext>(*GetNativeScorer(), (u32)numActions);
 		}
 
         /// <summary>
         /// Initializes a generic explorer with variable number of actions.
         /// </summary>
         /// <param name="defaultScorer">A function which outputs the probability of each action.</param>
-        GenericExplorer(IScorer<Ctx>^ defaultScorer)
+        GenericExplorerMultiAction(IScorer<Ctx>^ defaultScorer)
         {
             this->defaultScorer = defaultScorer;
-            m_explorer = new NativeMultiWorldTesting::GenericExplorer<NativeContext>(*GetNativeScorer());
+            m_explorer = new NativeMultiWorldTesting::GenericExplorerMultiAction<NativeContext>(*GetNativeScorer());
         }
 
         virtual void UpdateScorer(IScorer<Ctx>^ newScorer)
@@ -273,7 +273,7 @@ namespace MultiWorldTesting {
             m_explorer->Enable_Explore(explore);
         }
 
-		~GenericExplorer()
+		~GenericExplorerMultiAction()
 		{
 			delete m_explorer;
 		}
@@ -284,14 +284,14 @@ namespace MultiWorldTesting {
 			return defaultScorer->ScoreActions(context);
 		}
 
-		NativeMultiWorldTesting::GenericExplorer<NativeContext>* Get()
+		NativeMultiWorldTesting::GenericExplorerMultiAction<NativeContext>* Get()
 		{
 			return m_explorer;
 		}
 
 	private:
 		IScorer<Ctx>^ defaultScorer;
-		NativeMultiWorldTesting::GenericExplorer<NativeContext>* m_explorer;
+		NativeMultiWorldTesting::GenericExplorerMultiAction<NativeContext>* m_explorer;
 	};
 
 	/// <summary>
@@ -304,7 +304,7 @@ namespace MultiWorldTesting {
 	/// </remarks>
 	/// <typeparam name="Ctx">The Context type.</typeparam>
 	generic <class Ctx>
-	public ref class BootstrapExplorer : public IExplorer<Ctx>, public IConsumePolicies<Ctx>, public PolicyCallback<Ctx>
+	public ref class BootstrapExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumePolicies<Ctx>, public PolicyCallback<Ctx>
 	{
 	public:
 		/// <summary>
@@ -312,7 +312,7 @@ namespace MultiWorldTesting {
 		/// </summary>
 		/// <param name="defaultPolicies">A set of default policies to be uniform random over.</param>
 		/// <param name="numActions">The number of actions to randomize over.</param>
-		BootstrapExplorer(cli::array<IPolicy<Ctx>^>^ defaultPolicies, UInt32 numActions)
+		BootstrapExplorerMultiAction(cli::array<IPolicyMultiAction<Ctx>^>^ defaultPolicies, UInt32 numActions)
 		{
 			this->defaultPolicies = defaultPolicies;
 			if (this->defaultPolicies == nullptr)
@@ -320,14 +320,14 @@ namespace MultiWorldTesting {
 				throw gcnew ArgumentNullException("The specified array of default policy functions cannot be null.");
 			}
 
-			m_explorer = new NativeMultiWorldTesting::BootstrapExplorer<NativeContext>(*GetNativePolicies((u32)defaultPolicies->Length), (u32)numActions);
+			m_explorer = new NativeMultiWorldTesting::BootstrapExplorerMultiAction<NativeContext>(*GetNativePolicies((u32)defaultPolicies->Length), (u32)numActions);
 		}
 
         /// <summary>
         /// Initializes a bootstrap explorer with variable number of actions.
         /// </summary>
         /// <param name="defaultPolicies">A set of default policies to be uniform random over.</param>
-        BootstrapExplorer(cli::array<IPolicy<Ctx>^>^ defaultPolicies)
+        BootstrapExplorerMultiAction(cli::array<IPolicyMultiAction<Ctx>^>^ defaultPolicies)
         {
             this->defaultPolicies = defaultPolicies;
             if (this->defaultPolicies == nullptr)
@@ -335,10 +335,10 @@ namespace MultiWorldTesting {
                 throw gcnew ArgumentNullException("The specified array of default policy functions cannot be null.");
             }
 
-            m_explorer = new NativeMultiWorldTesting::BootstrapExplorer<NativeContext>(*GetNativePolicies((u32)defaultPolicies->Length));
+            m_explorer = new NativeMultiWorldTesting::BootstrapExplorerMultiAction<NativeContext>(*GetNativePolicies((u32)defaultPolicies->Length));
         }
 
-        virtual void UpdatePolicy(cli::array<IPolicy<Ctx>^>^ newPolicies)
+        virtual void UpdatePolicy(cli::array<IPolicyMultiAction<Ctx>^>^ newPolicies)
         {
             this->defaultPolicies = newPolicies;
         }
@@ -348,7 +348,7 @@ namespace MultiWorldTesting {
             m_explorer->Enable_Explore(explore);
         }
 
-		~BootstrapExplorer()
+		~BootstrapExplorerMultiAction()
 		{
 			delete m_explorer;
 		}
@@ -375,14 +375,14 @@ namespace MultiWorldTesting {
             Array::Copy(defaultActions, actions, actions->Length);
 		}
 
-		NativeMultiWorldTesting::BootstrapExplorer<NativeContext>* Get()
+		NativeMultiWorldTesting::BootstrapExplorerMultiAction<NativeContext>* Get()
 		{
 			return m_explorer;
 		}
 
 	private:
-		cli::array<IPolicy<Ctx>^>^ defaultPolicies;
-		NativeMultiWorldTesting::BootstrapExplorer<NativeContext>* m_explorer;
+		cli::array<IPolicyMultiAction<Ctx>^>^ defaultPolicies;
+		NativeMultiWorldTesting::BootstrapExplorerMultiAction<NativeContext>* m_explorer;
 	};
 
 	/// <summary>
@@ -399,7 +399,7 @@ namespace MultiWorldTesting {
         /// </summary>
         /// <param name="appId">This should be unique to each experiment to avoid correlation bugs.</param>
         /// <param name="recorder">A user-specified class for recording the appropriate bits for use in evaluation and learning.</param>
-        MwtExplorer(String^ appId, IRecorder<Ctx>^ recorder) : RecorderCallback(nullptr)
+        MwtExplorer(String^ appId, IRecorderMultiAction<Ctx>^ recorder) : RecorderCallback(nullptr)
         {
             this->appId = appId;
             this->recorder = recorder;
@@ -411,7 +411,7 @@ namespace MultiWorldTesting {
 		/// <param name="appId">This should be unique to each experiment to avoid correlation bugs.</param>
 		/// <param name="recorder">A user-specified class for recording the appropriate bits for use in evaluation and learning.</param>
         /// <param name="getNumberOfActionsFunc">Optional; A callback function to retrieve the number of actions for the current context.</param>
-        MwtExplorer(String^ appId, IRecorder<Ctx>^ recorder, Func<Ctx, UInt32>^ getNumberOfActionsFunc) : RecorderCallback(getNumberOfActionsFunc)
+        MwtExplorer(String^ appId, IRecorderMultiAction<Ctx>^ recorder, Func<Ctx, UInt32>^ getNumberOfActionsFunc) : RecorderCallback(getNumberOfActionsFunc)
 		{
 			this->appId = appId;
 			this->recorder = recorder;
@@ -424,7 +424,7 @@ namespace MultiWorldTesting {
 		/// <param name="unique_key">A unique identifier for the experimental unit. This could be a user id, a session id, etc...</param>
 		/// <param name="context">The context upon which a decision is made. See SimpleContext above for an example.</param>
 		/// <returns>An unsigned 32-bit integer representing the 1-based chosen action.</returns>
-        cli::array<UInt32>^ ChooseAction(IExplorer<Ctx>^ explorer, String^ unique_key, Ctx context)
+        cli::array<UInt32>^ ChooseAction(IExplorerMultiAction<Ctx>^ explorer, String^ unique_key, Ctx context)
 		{
 			String^ salt = this->appId;
 			NativeMultiWorldTesting::MwtExplorer<NativeContext> mwt(marshal_as<std::string>(salt), *GetNativeRecorder());
@@ -449,32 +449,32 @@ namespace MultiWorldTesting {
                     this->GetNumActionsCallback());
 
                 u32 action = 0;
-                NativeMultiWorldTesting::IExplorer<NativeContext>* native_explorer = nullptr;
+                NativeMultiWorldTesting::IExplorerMultiAction<NativeContext>* native_explorer = nullptr;
 
-                if (explorer->GetType() == EpsilonGreedyExplorer<Ctx>::typeid)
+                if (explorer->GetType() == EpsilonGreedyExplorerMultiAction<Ctx>::typeid)
                 {
-                    EpsilonGreedyExplorer<Ctx>^ epsilonGreedyExplorer = (EpsilonGreedyExplorer<Ctx>^)explorer;
-                    native_explorer = (NativeMultiWorldTesting::IExplorer<NativeContext>*)epsilonGreedyExplorer->Get();
+                    EpsilonGreedyExplorerMultiAction<Ctx>^ epsilonGreedyExplorerMultiAction = (EpsilonGreedyExplorerMultiAction<Ctx>^)explorer;
+                    native_explorer = (NativeMultiWorldTesting::IExplorerMultiAction<NativeContext>*)epsilonGreedyExplorerMultiAction->Get();
                 }
-                else if (explorer->GetType() == TauFirstExplorer<Ctx>::typeid)
+                else if (explorer->GetType() == TauFirstExplorerMultiAction<Ctx>::typeid)
                 {
-                    TauFirstExplorer<Ctx>^ tauFirstExplorer = (TauFirstExplorer<Ctx>^)explorer;
-                    native_explorer = (NativeMultiWorldTesting::IExplorer<NativeContext>*)tauFirstExplorer->Get();
+                    TauFirstExplorerMultiAction<Ctx>^ tauFirstExplorer = (TauFirstExplorerMultiAction<Ctx>^)explorer;
+                    native_explorer = (NativeMultiWorldTesting::IExplorerMultiAction<NativeContext>*)tauFirstExplorer->Get();
                 }
-                else if (explorer->GetType() == SoftmaxExplorer<Ctx>::typeid)
+                else if (explorer->GetType() == SoftmaxExplorerMultiAction<Ctx>::typeid)
                 {
-                    SoftmaxExplorer<Ctx>^ softmaxExplorer = (SoftmaxExplorer<Ctx>^)explorer;
-                    native_explorer = (NativeMultiWorldTesting::IExplorer<NativeContext>*)softmaxExplorer->Get();
+                    SoftmaxExplorerMultiAction<Ctx>^ softmaxExplorer = (SoftmaxExplorerMultiAction<Ctx>^)explorer;
+                    native_explorer = (NativeMultiWorldTesting::IExplorerMultiAction<NativeContext>*)softmaxExplorer->Get();
                 }
-                else if (explorer->GetType() == GenericExplorer<Ctx>::typeid)
+                else if (explorer->GetType() == GenericExplorerMultiAction<Ctx>::typeid)
                 {
-                    GenericExplorer<Ctx>^ genericExplorer = (GenericExplorer<Ctx>^)explorer;
-                    native_explorer = (NativeMultiWorldTesting::IExplorer<NativeContext>*)genericExplorer->Get();
+                    GenericExplorerMultiAction<Ctx>^ genericExplorer = (GenericExplorerMultiAction<Ctx>^)explorer;
+                    native_explorer = (NativeMultiWorldTesting::IExplorerMultiAction<NativeContext>*)genericExplorer->Get();
                 }
-                else if (explorer->GetType() == BootstrapExplorer<Ctx>::typeid)
+                else if (explorer->GetType() == BootstrapExplorerMultiAction<Ctx>::typeid)
                 {
-                    BootstrapExplorer<Ctx>^ bootstrapExplorer = (BootstrapExplorer<Ctx>^)explorer;
-                    native_explorer = (NativeMultiWorldTesting::IExplorer<NativeContext>*)bootstrapExplorer->Get();
+                    BootstrapExplorerMultiAction<Ctx>^ bootstrapExplorer = (BootstrapExplorerMultiAction<Ctx>^)explorer;
+                    native_explorer = (NativeMultiWorldTesting::IExplorerMultiAction<NativeContext>*)bootstrapExplorer->Get();
                 }
 
                 if (native_explorer == nullptr)
@@ -528,7 +528,7 @@ namespace MultiWorldTesting {
 		}
 
 	private:
-		IRecorder<Ctx>^ recorder;
+		IRecorderMultiAction<Ctx>^ recorder;
 		String^ appId;
 	};
 

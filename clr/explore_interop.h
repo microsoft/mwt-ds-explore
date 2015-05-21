@@ -111,7 +111,7 @@ private:
 };
 
 // NativeRecorder listens to callback event and reroute it to the managed Recorder instance
-class NativeRecorder : public NativeMultiWorldTesting::IRecorder<NativeContext>
+class NativeRecorder : public NativeMultiWorldTesting::IRecorderMultiAction<NativeContext>
 {
 public:
     NativeRecorder(Native_Recorder_Callback* native_func) : m_func(native_func)
@@ -142,7 +142,7 @@ private:
 };
 
 // NativePolicy listens to callback event and reroute it to the managed Policy instance
-class NativePolicy : public NativeMultiWorldTesting::IPolicy<NativeContext>
+class NativePolicy : public NativeMultiWorldTesting::IPolicyMultiAction<NativeContext>
 {
 public:
     NativePolicy(Native_Policy_Callback* func, int index = -1) : m_func(func)
@@ -259,14 +259,14 @@ internal:
 		return m_native_policy;
 	}
   
-  vector<unique_ptr<NativeMultiWorldTesting::IPolicy<NativeContext>>>* GetNativePolicies(int count)
+  vector<unique_ptr<NativeMultiWorldTesting::IPolicyMultiAction<NativeContext>>>* GetNativePolicies(int count)
 	{
 		if (m_native_policies == nullptr)
 		{
-            m_native_policies = new vector<unique_ptr<NativeMultiWorldTesting::IPolicy<NativeContext>>>();
+            m_native_policies = new vector<unique_ptr<NativeMultiWorldTesting::IPolicyMultiAction<NativeContext>>>();
 			for (int i = 0; i < count; i++)
 			{
-                m_native_policies->push_back(unique_ptr<NativeMultiWorldTesting::IPolicy<NativeContext>>(new NativePolicy(m_callback, i)));
+                m_native_policies->push_back(unique_ptr<NativeMultiWorldTesting::IPolicyMultiAction<NativeContext>>(new NativePolicy(m_callback, i)));
 			}
 		}
 
@@ -292,7 +292,7 @@ private:
 
 private:
 	NativePolicy* m_native_policy;
-	vector<unique_ptr<NativeMultiWorldTesting::IPolicy<NativeContext>>>* m_native_policies;
+	vector<unique_ptr<NativeMultiWorldTesting::IPolicyMultiAction<NativeContext>>>* m_native_policies;
 	Native_Policy_Callback* m_callback;
 };
 

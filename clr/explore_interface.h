@@ -22,11 +22,11 @@ namespace MultiWorldTesting {
 /// <typeparam name="Ctx">The Context type.</typeparam>
 /// <remarks>
 /// Exploration data is specified as a set of tuples (context, action, probability, key) as described below. An 
-/// application passes an IRecorder object to the @MwtExplorer constructor. See 
-/// @StringRecorder for a sample IRecorder object.
+/// application passes an IRecorderMultiAction object to the @MwtExplorer constructor. See 
+/// @StringRecorder for a sample IRecorderMultiAction object.
 /// </remarks>
 generic <class Ctx>
-public interface class IRecorder
+public interface class IRecorderMultiAction
 {
 public:
 	/// <summary>
@@ -41,12 +41,12 @@ public:
 };
 
 /// <summary>
-/// Exposes a method for choosing an action given a generic context. IPolicy objects are 
+/// Exposes a method for choosing an action given a generic context. IPolicyMultiAction objects are 
 /// passed to (and invoked by) exploration algorithms to specify the default policy behavior.
 /// </summary>
 /// <typeparam name="Ctx">The Context type.</typeparam>
 generic <class Ctx>
-public interface class IPolicy
+public interface class IPolicyMultiAction
 {
 public:
 	/// <summary>
@@ -76,24 +76,24 @@ public:
 };
 
 generic <class Ctx>
-public interface class IExplorer
+public interface class IExplorerMultiAction
 {
 public:
     virtual void EnableExplore(bool explore) = 0;
 };
 
 generic <class Ctx>
-public interface class IConsumePolicy
+public interface class IConsumePolicyMultiAction
 {
 public:
-    virtual void UpdatePolicy(IPolicy<Ctx>^ newPolicy) = 0;
+    virtual void UpdatePolicy(IPolicyMultiAction<Ctx>^ newPolicy) = 0;
 };
 
 generic <class Ctx>
 public interface class IConsumePolicies
 {
 public:
-    virtual void UpdatePolicy(cli::array<IPolicy<Ctx>^>^ newPolicies) = 0;
+    virtual void UpdatePolicy(cli::array<IPolicyMultiAction<Ctx>^>^ newPolicies) = 0;
 };
 
 generic <class Ctx>

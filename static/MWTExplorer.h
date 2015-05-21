@@ -43,9 +43,9 @@ MWT_NAMESPACE {
 
 // Forward declarations
 template <class Ctx> 
-class IRecorder;
+class IRecorderMultiAction;
 template <class Ctx>
-class IExplorer;
+class IExplorerMultiAction;
 
 ///
 /// The top-level MwtExplorer class. Using this enables principled and efficient exploration
@@ -61,7 +61,7 @@ public:
     /// @param appid      This should be unique to your experiment or you risk nasty correlation bugs.
     /// @param recorder   A user-specified class for recording the appropriate bits for use in evaluation and learning.
     ///
-    MwtExplorer(std::string app_id, IRecorder<Ctx>& recorder) : m_recorder(recorder)
+    MwtExplorer(std::string app_id, IRecorderMultiAction<Ctx>& recorder) : m_recorder(recorder)
     {
         m_app_id = HashUtils::Compute_Id_Hash(app_id);
     }
@@ -74,7 +74,7 @@ public:
     /// @param unique_key  A unique identifier for the experimental unit. This could be a user id, a session id, etc..
     /// @param context     The context upon which a decision is made. See SimpleContext below for an example.
     ///
-    void Choose_Action(IExplorer<Ctx>& explorer, string unique_key, Ctx& context, u32* actions, u32 num_actions)
+    void Choose_Action(IExplorerMultiAction<Ctx>& explorer, string unique_key, Ctx& context, u32* actions, u32 num_actions)
     {
         u64 seed = HashUtils::Compute_Id_Hash(unique_key);
 
@@ -89,24 +89,24 @@ public:
     }
 
 PORTING_INTERFACE:
-    u32 Get_Number_Of_Actions(IExplorer<Ctx>& explorer, Ctx& context)
+    u32 Get_Number_Of_Actions(IExplorerMultiAction<Ctx>& explorer, Ctx& context)
     {
         return explorer.Get_Number_Of_Actions(context);
     }
 
 private:
     u64 m_app_id;
-    IRecorder<Ctx>& m_recorder;
+    IRecorderMultiAction<Ctx>& m_recorder;
 };
 
 ///
 /// Exposes a method to record exploration data based on generic contexts. Exploration data
 /// is specified as a set of tuples <context, action, probability, key> as described below. An 
-/// application passes an IRecorder object to the @MwtExplorer constructor. See 
-/// @StringRecorder for a sample IRecorder object.
+/// application passes an IRecorderMultiAction object to the @MwtExplorer constructor. See 
+/// @StringRecorder for a sample IRecorderMultiAction object.
 ///
 template <class Ctx>
-class IRecorder
+class IRecorderMultiAction
 {
 public:
     ///
@@ -119,17 +119,17 @@ public:
     /// @param unique_key   A user-defined unique identifer for the decision
     ///
     virtual void Record(Ctx& context, u32* actions, u32 num_actions, float probability, string unique_key) = 0;
-    virtual ~IRecorder() { }
+    virtual ~IRecorderMultiAction() { }
 };
 
 ///
 /// Exposes a method to choose an action given a generic context, and obtain the relevant
-/// exploration bits. Invokes IPolicy::Choose_Action internally. Do not implement this 
+/// exploration bits. Invokes IPolicyMultiAction::Choose_Action internally. Do not implement this 
 /// interface yourself: instead, use the various exploration algorithms below, which 
 /// implement it for you. 
 ///
 template <class Ctx>
-class IExplorer
+class IExplorerMultiAction
 {
 public:
     ///
@@ -143,18 +143,45 @@ public:
     ///
     virtual std::tuple<float, bool> Choose_Action(u64 salted_seed, Ctx& context, u32* actions, u32 num_actions) = 0;
     virtual void Enable_Explore(bool explore) = 0;
-    virtual ~IExplorer() { }
+    virtual ~IExplorerMultiAction() { }
 
 PORTING_INTERFACE:
     virtual u32 Get_Number_Of_Actions(Ctx& context) = 0;
 };
 
 ///
-/// Exposes a method to choose an action given a generic context. IPolicy objects are 
+/// Exposes a method to choose an action given a generic context, and obtain the relevant
+/// exploration bits. Invokes IPolicyMultiAction::Choose_Action internally. Do not implement this 
+/// interface yourself: instead, use the various exploration algorithms below, which 
+/// implement it for you. 
+///
+template <class Ctx>
+class IExplorerSingleAction
+{
+public:
+    ///
+    /// Determines the action to take and the probability with which it was chosen, for a
+    /// given context.
+    ///
+    /// @param salted_seed  A PRG seed based on a unique id information provided by the user
+    /// @param context      A user-defined context for the decision
+    /// @returns            The action to take, the probability it was chosen, and a flag indicating 
+    ///                     whether to record this decision
+    ///
+    virtual std::tuple<u32, float, bool> Choose_Action(u64 salted_seed, Ctx& context) = 0;
+    virtual void Enable_Explore(bool explore) = 0;
+    virtual ~IExplorerSingleAction() { }
+
+PORTING_INTERFACE:
+    virtual u32 Get_Number_Of_Actions(Ctx& context) = 0;
+};
+
+///
+/// Exposes a method to choose an action given a generic context. IPolicyMultiAction objects are 
 /// passed to (and invoked by) exploration algorithms to specify the default policy behavior.
 ///
 template <class Ctx>
-class IPolicy
+class IPolicyMultiAction
 {
 public:
     ///
@@ -165,7 +192,26 @@ public:
     /// @returns	        The action to take (1-based index)
     ///
     virtual void Choose_Action(Ctx& context, u32* actions, u32 num_actions) = 0;
-    virtual ~IPolicy() { }
+    virtual ~IPolicyMultiAction() { }
+};
+
+///
+/// Exposes a method to choose an action given a generic context. IPolicyMultiAction objects are 
+/// passed to (and invoked by) exploration algorithms to specify the default policy behavior.
+///
+template <class Ctx>
+class IPolicySingleAction
+{
+public:
+    ///
+    /// Determines the action to take for a given context.
+    /// This implementation should be thread-safe if multithreading is needed.
+    ///
+    /// @param context   A user-defined context for the decision
+    /// @returns	        The action to take (1-based index)
+    ///
+    virtual u32 Choose_Action(Ctx& context) = 0;
+    virtual ~IPolicySingleAction() { }
 };
 
 ///
@@ -203,18 +249,26 @@ public:
 };
 
 template <class Ctx>
-class IConsumePolicy
+class IConsumePolicyMultiAction
 {
 public:
-    virtual void Update_Policy(IPolicy<Ctx>& new_policy) = 0;
-    virtual ~IConsumePolicy() { }
+    virtual void Update_Policy(IPolicyMultiAction<Ctx>& new_policy) = 0;
+    virtual ~IConsumePolicyMultiAction() { }
+};
+
+template <class Ctx>
+class IConsumePolicySingleAction
+{
+public:
+    virtual void Update_Policy(IPolicySingleAction<Ctx>& new_policy) = 0;
+    virtual ~IConsumePolicySingleAction() { }
 };
 
 template <class Ctx>
 class IConsumePolicies
 {
 public:
-    virtual void Update_Policy(vector<unique_ptr<IPolicy<Ctx>>>& new_policy_functions) = 0;
+    virtual void Update_Policy(vector<unique_ptr<IPolicyMultiAction<Ctx>>>& new_policy_functions) = 0;
     virtual ~IConsumePolicies() { }
 };
 
@@ -230,7 +284,7 @@ public:
 /// A sample recorder class that converts the exploration tuple into string format.
 ///
 template <class Ctx>
-struct StringRecorder : public IRecorder<Ctx>
+struct StringRecorder : public IRecorderMultiAction<Ctx>
 {
     void Record(Ctx& context, u32* actions, u32 num_actions, float probability, string unique_key)
     {
@@ -433,7 +487,7 @@ void Put_Action_To_List(u32 action, u32* actions, u32 num_actions)
 /// which actions should be preferred.  Epsilon greedy is also computationally cheap.
 ///
 template <class Ctx>
-class EpsilonGreedyExplorer : public IExplorer<Ctx>, public IConsumePolicy<Ctx>
+class EpsilonGreedyExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumePolicyMultiAction<Ctx>
 {
 public:
     ///
@@ -443,7 +497,7 @@ public:
     /// @param epsilon         The probability of a random exploration.
     /// @param num_actions     The number of actions to randomize over.
     ///
-    EpsilonGreedyExplorer(IPolicy<Ctx>& default_policy, float epsilon, u32 num_actions) :
+    EpsilonGreedyExplorerMultiAction(IPolicyMultiAction<Ctx>& default_policy, float epsilon, u32 num_actions) :
         m_default_policy(default_policy), m_epsilon(epsilon), m_num_actions(num_actions), m_explore(true)
     {
         if (m_num_actions < 1)
@@ -463,7 +517,7 @@ public:
     /// @param default_policy  A default function which outputs an action given a context.
     /// @param epsilon         The probability of a random exploration.
     ///
-    EpsilonGreedyExplorer(IPolicy<Ctx>& default_policy, float epsilon) :
+    EpsilonGreedyExplorerMultiAction(IPolicyMultiAction<Ctx>& default_policy, float epsilon) :
         m_default_policy(default_policy), m_epsilon(epsilon), m_num_actions(UINT_MAX), m_explore(true)
     {
         if (m_epsilon < 0 || m_epsilon > 1)
@@ -473,7 +527,7 @@ public:
         static_assert(std::is_base_of<IVariableActionContext, Ctx>::value, "The provided context does not implement variable-action interface.");
     }
 
-    void Update_Policy(IPolicy<Ctx>& new_policy)
+    void Update_Policy(IPolicyMultiAction<Ctx>& new_policy)
     {
         m_default_policy = new_policy;
     }
@@ -533,7 +587,123 @@ PORTING_INTERFACE:
     }
 
 private:
-    IPolicy<Ctx>& m_default_policy;
+    IPolicyMultiAction<Ctx>& m_default_policy;
+    const float m_epsilon;
+    bool m_explore;
+    const u32 m_num_actions;
+};
+
+///
+/// The epsilon greedy exploration algorithm. This is a good choice if you have no idea 
+/// which actions should be preferred.  Epsilon greedy is also computationally cheap.
+///
+template <class Ctx>
+class EpsilonGreedyExplorerSingleAction : public IExplorerSingleAction<Ctx>, public IConsumePolicySingleAction<Ctx>
+{
+public:
+    ///
+    /// The constructor is the only public member, because this should be used with the MwtExplorer.
+    ///
+    /// @param default_policy  A default function which outputs an action given a context.
+    /// @param epsilon         The probability of a random exploration.
+    /// @param num_actions     The number of actions to randomize over.
+    ///
+    EpsilonGreedyExplorerSingleAction(IPolicySingleAction<Ctx>& default_policy, float epsilon, u32 num_actions) :
+        m_default_policy(default_policy), m_epsilon(epsilon), m_num_actions(num_actions), m_explore(true)
+    {
+        if (m_num_actions < 1)
+        {
+            throw std::invalid_argument("Number of actions must be at least 1.");
+        }
+
+        if (m_epsilon < 0 || m_epsilon > 1)
+        {
+            throw std::invalid_argument("Epsilon must be between 0 and 1.");
+        }
+    }
+
+    ///
+    /// Initializes an epsilon greedy explorer with variable number of actions.
+    ///
+    /// @param default_policy  A default function which outputs an action given a context.
+    /// @param epsilon         The probability of a random exploration.
+    ///
+    EpsilonGreedyExplorerSingleAction(IPolicySingleAction<Ctx>& default_policy, float epsilon) :
+        m_default_policy(default_policy), m_epsilon(epsilon), m_num_actions(UINT_MAX), m_explore(true)
+    {
+        if (m_epsilon < 0 || m_epsilon > 1)
+        {
+            throw std::invalid_argument("Epsilon must be between 0 and 1.");
+        }
+        static_assert(std::is_base_of<IVariableActionContext, Ctx>::value, "The provided context does not implement variable-action interface.");
+    }
+
+    void Update_Policy(IPolicySingleAction<Ctx>& new_policy)
+    {
+        m_default_policy = new_policy;
+    }
+
+    void Enable_Explore(bool explore)
+    {
+        m_explore = explore;
+    }
+
+private:
+    std::tuple<u32, float, bool> Choose_Action(u64 salted_seed, Ctx& context)
+    {
+        u32 num_actions = ::Get_Variable_Number_Of_Actions(context, m_num_actions);
+
+        PRG::prg random_generator(salted_seed);
+
+        // Invoke the default policy function to get the action
+        u32 chosen_action = m_default_policy.Choose_Action(context);
+
+        if (chosen_action == 0 || chosen_action > num_actions)
+        {
+            throw std::invalid_argument("Action chosen by default policy is not within valid range.");
+        }
+
+        float epsilon = m_explore ? m_epsilon : 0.f;
+
+        float action_probability = 0.f;
+        float base_probability = epsilon / num_actions; // uniform probability
+
+        // TODO: check this random generation
+        if (random_generator.Uniform_Unit_Interval() < 1.f - epsilon)
+        {
+            action_probability = 1.f - epsilon + base_probability;
+        }
+        else
+        {
+            // Get uniform random action ID
+            u32 actionId = random_generator.Uniform_Int(1, num_actions);
+
+            if (actionId == chosen_action)
+            {
+                // IF it matches the one chosen by the default policy
+                // then increase the probability
+                action_probability = 1.f - epsilon + base_probability;
+            }
+            else
+            {
+                // Otherwise it's just the uniform probability
+                action_probability = base_probability;
+            }
+            chosen_action = actionId;
+        }
+
+        return std::tuple<u32, float, bool>(chosen_action, action_probability, true);
+    }
+
+PORTING_INTERFACE:
+
+    u32 Get_Number_Of_Actions(Ctx& context)
+    {
+        return ::Get_Variable_Number_Of_Actions(context, m_num_actions);
+    }
+
+private:
+    IPolicySingleAction<Ctx>& m_default_policy;
     const float m_epsilon;
     bool m_explore;
     const u32 m_num_actions;
@@ -544,7 +714,7 @@ private:
 /// choose actions with large scores. Softmax allows you to do that.
 /// 
 template <class Ctx>
-class SoftmaxExplorer : public IExplorer<Ctx>, public IConsumeScorer<Ctx>
+class SoftmaxExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumeScorer<Ctx>
 {
 public:
     ///
@@ -554,7 +724,7 @@ public:
     /// @param lambda          lambda = 0 implies uniform distribution.  Large lambda is equivalent to a max.
     /// @param num_actions     The number of actions to randomize over.
     ///
-    SoftmaxExplorer(IScorer<Ctx>& default_scorer, float lambda, u32 num_actions) :
+    SoftmaxExplorerMultiAction(IScorer<Ctx>& default_scorer, float lambda, u32 num_actions) :
         m_default_scorer(default_scorer), m_lambda(lambda), m_num_actions(num_actions), m_explore(true)
     {
         if (m_num_actions < 1)
@@ -569,7 +739,7 @@ public:
     /// @param default_scorer  A function which outputs a score for each action.
     /// @param lambda          lambda = 0 implies uniform distribution.  Large lambda is equivalent to a max.
     ///
-    SoftmaxExplorer(IScorer<Ctx>& default_scorer, float lambda) :
+    SoftmaxExplorerMultiAction(IScorer<Ctx>& default_scorer, float lambda) :
         m_default_scorer(default_scorer), m_lambda(lambda), m_num_actions(UINT_MAX), m_explore(true)
     {
         static_assert(std::is_base_of<IVariableActionContext, Ctx>::value, "The provided context does not implement variable-action interface.");
@@ -678,11 +848,11 @@ private:
 };
 
 ///
-/// GenericExplorer provides complete flexibility.  You can create any
+/// GenericExplorerMultiAction provides complete flexibility.  You can create any
 /// distribution over actions desired, and it will draw from that.
 /// 
 template <class Ctx>
-class GenericExplorer : public IExplorer<Ctx>, public IConsumeScorer<Ctx>
+class GenericExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumeScorer<Ctx>
 {
 public:
     ///
@@ -691,7 +861,7 @@ public:
     /// @param default_scorer  A function which outputs the probability of each action.
     /// @param num_actions     The number of actions to randomize over.
     ///
-    GenericExplorer(IScorer<Ctx>& default_scorer, u32 num_actions) :
+    GenericExplorerMultiAction(IScorer<Ctx>& default_scorer, u32 num_actions) :
         m_default_scorer(default_scorer), m_num_actions(num_actions), m_explore(true)
     {
         if (m_num_actions < 1)
@@ -705,7 +875,7 @@ public:
     ///
     /// @param default_scorer  A function which outputs the probability of each action.
     ///
-    GenericExplorer(IScorer<Ctx>& default_scorer) :
+    GenericExplorerMultiAction(IScorer<Ctx>& default_scorer) :
         m_default_scorer(default_scorer), m_num_actions(UINT_MAX), m_explore(true)
     {
         static_assert(std::is_base_of<IVariableActionContext, Ctx>::value, "The provided context does not implement variable-action interface.");
@@ -781,7 +951,7 @@ private:
 /// uses the default policy thereafter.
 /// 
 template <class Ctx>
-class TauFirstExplorer : public IExplorer<Ctx>, public IConsumePolicy<Ctx>
+class TauFirstExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumePolicyMultiAction<Ctx>
 {
 public:
 
@@ -792,7 +962,7 @@ public:
     /// @param tau             The number of events to be uniform over.
     /// @param num_actions     The number of actions to randomize over.
     ///
-    TauFirstExplorer(IPolicy<Ctx>& default_policy, u32 tau, u32 num_actions) :
+    TauFirstExplorerMultiAction(IPolicyMultiAction<Ctx>& default_policy, u32 tau, u32 num_actions) :
         m_default_policy(default_policy), m_tau(tau), m_num_actions(num_actions), m_explore(true)
     {
         if (m_num_actions < 1)
@@ -809,7 +979,7 @@ public:
     /// @param default_policy  A default policy after randomization finishes.
     /// @param tau             The number of events to be uniform over.
     ///
-    TauFirstExplorer(IPolicy<Ctx>& default_policy, u32 tau) :
+    TauFirstExplorerMultiAction(IPolicyMultiAction<Ctx>& default_policy, u32 tau) :
         m_default_policy(default_policy), m_tau(tau), m_num_actions(UINT_MAX), m_explore(true)
     {
         static_assert(std::is_base_of<IVariableActionContext, Ctx>::value, "The provided context does not implement variable-action interface.");
@@ -817,12 +987,12 @@ public:
         ::InitializeCriticalSection(&m_critical_section);
     }
 
-    ~TauFirstExplorer() 
+    ~TauFirstExplorerMultiAction() 
     {
         ::DeleteCriticalSection(&m_critical_section);
     }
 
-    void Update_Policy(IPolicy<Ctx>& new_policy)
+    void Update_Policy(IPolicyMultiAction<Ctx>& new_policy)
     {
         m_default_policy = new_policy;
     }
@@ -885,7 +1055,7 @@ PORTING_INTERFACE:
     }
 
 private:
-    IPolicy<Ctx>& m_default_policy;
+    IPolicyMultiAction<Ctx>& m_default_policy;
     bool m_explore;
     u32 m_tau;
     const u32 m_num_actions;
@@ -897,7 +1067,7 @@ private:
 /// This performs well statistically but can be computationally expensive.
 /// 
 template <class Ctx>
-class BootstrapExplorer : public IExplorer<Ctx>, public IConsumePolicies<Ctx>
+class BootstrapExplorerMultiAction : public IExplorerMultiAction<Ctx>, public IConsumePolicies<Ctx>
 {
 public:
     ///
@@ -907,7 +1077,7 @@ public:
     /// The policy pointers must be valid throughout the lifetime of this explorer.
     /// @param num_actions               The number of actions to randomize over.
     ///
-    BootstrapExplorer(vector<unique_ptr<IPolicy<Ctx>>>& default_policy_functions, u32 num_actions) :
+    BootstrapExplorerMultiAction(vector<unique_ptr<IPolicyMultiAction<Ctx>>>& default_policy_functions, u32 num_actions) :
         m_default_policy_functions(default_policy_functions),
         m_num_actions(num_actions), m_explore(true), m_bags((u32)default_policy_functions.size())
     {
@@ -928,7 +1098,7 @@ public:
     /// @param default_policy_functions  A set of default policies to be uniform random over. 
     /// The policy pointers must be valid throughout the lifetime of this explorer.
     ///
-    BootstrapExplorer(vector<unique_ptr<IPolicy<Ctx>>>& default_policy_functions) :
+    BootstrapExplorerMultiAction(vector<unique_ptr<IPolicyMultiAction<Ctx>>>& default_policy_functions) :
         m_default_policy_functions(default_policy_functions),
         m_num_actions(UINT_MAX), m_explore(true), m_bags((u32)default_policy_functions.size())
     {
@@ -940,7 +1110,7 @@ public:
         static_assert(std::is_base_of<IVariableActionContext, Ctx>::value, "The provided context does not implement variable-action interface.");
     }
 
-    void Update_Policy(vector<unique_ptr<IPolicy<Ctx>>>& new_policy_functions)
+    void Update_Policy(vector<unique_ptr<IPolicyMultiAction<Ctx>>>& new_policy_functions)
     {
         m_default_policy_functions = move(new_policy_functions);
     }
@@ -1018,7 +1188,7 @@ PORTING_INTERFACE:
     }
 
 private:
-    vector<unique_ptr<IPolicy<Ctx>>>& m_default_policy_functions;
+    vector<unique_ptr<IPolicyMultiAction<Ctx>>>& m_default_policy_functions;
     bool m_explore;
     const u32 m_bags;
     const u32 m_num_actions;

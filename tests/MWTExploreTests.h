@@ -41,7 +41,7 @@ struct TestInteraction
 };
 
 template <class TContext>
-class TestPolicy : public IPolicy<TContext>
+class TestPolicy : public IPolicyMultiAction<TContext>
 {
 public:
 	TestPolicy(int params, int num_actions) : m_params(params), m_num_actions(num_actions) { }
@@ -129,7 +129,7 @@ private:
 	int m_num_actions;
 };
 
-class TestSimplePolicy : public IPolicy<SimpleContext>
+class TestSimplePolicy : public IPolicyMultiAction<SimpleContext>
 {
 public:
 	TestSimplePolicy(int params, int num_actions) : m_params(params), m_num_actions(num_actions) { }
@@ -145,7 +145,7 @@ private:
 	int m_num_actions;
 };
 
-class TestSimpleRecorder : public IRecorder<SimpleContext>
+class TestSimpleRecorder : public IRecorderMultiAction<SimpleContext>
 {
 public:
     virtual void Record(SimpleContext& context, u32* actions, u32 num_actions, float probability, string unique_key)
@@ -163,7 +163,7 @@ private:
 };
 
 // Return action outside valid range
-class TestBadPolicy : public IPolicy<TestContext>
+class TestBadPolicy : public IPolicyMultiAction<TestContext>
 {
 public:
     void Choose_Action(TestContext& context, u32* actions, u32 num_actions)
@@ -176,7 +176,7 @@ public:
 };
 
 template <class TContext>
-class TestRecorder : public IRecorder<TContext>
+class TestRecorder : public IRecorderMultiAction<TContext>
 {
 public:
     virtual void Record(TContext& context, u32* actions, u32 num_actions, float probability, string unique_key)
